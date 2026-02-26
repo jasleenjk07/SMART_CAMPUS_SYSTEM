@@ -1,0 +1,152 @@
+{% extends 'attendance/base.html' %}
+
+{% block title %}Admin Dashboard - Smart Attendance{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="welcome-section">
+        <h1>Admin Dashboard</h1>
+        <p class="welcome-text">Welcome, {{ user.get_full_name|default:user.username }}!</p>
+        <p class="dashboard-intro">Manage faculty, students, sections, and system settings.</p>
+    </div>
+
+    <div class="stats-row">
+        <a href="{% url 'faculty_list' %}" class="stat-card stat-card-link">
+            <span class="stat-value">{{ faculty_count }}</span>
+            <span class="stat-label">Faculty</span>
+        </a>
+        <a href="{% url 'student_list' %}" class="stat-card stat-card-link">
+            <span class="stat-value">{{ student_count }}</span>
+            <span class="stat-label">Students</span>
+        </a>
+        <div class="stat-card">
+            <span class="stat-value">{{ sections|length }}</span>
+            <span class="stat-label">Sections</span>
+        </div>
+    </div>
+
+    <h2 class="section-heading">Quick Actions</h2>
+    <div class="action-grid">
+        <a href="{% url 'faculty_list' %}" class="btn btn-primary">Manage Faculty</a>
+        <a href="{% url 'faculty_create' %}" class="btn btn-secondary">Add Faculty</a>
+        <a href="{% url 'student_list' %}" class="btn btn-primary">View Students</a>
+        <a href="{% url 'student_create' %}" class="btn btn-secondary">Add Student</a>
+        <a href="{% url 'campus_resources' %}" class="btn btn-secondary">Campus Resources</a>
+        <a href="{% url 'analytics' %}" class="btn btn-secondary">Analytics</a>
+        <a href="{% url 'notification_logs' %}" class="btn btn-outline">Notification Logs</a>
+        <a href="/admin/" class="btn btn-outline" target="_blank">Django Admin</a>
+    </div>
+
+    <h2 class="section-heading">Sections Overview</h2>
+    {% if sections %}
+        <div class="table-wrapper">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Section</th>
+                        <th>Course</th>
+                        <th>Students</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for s in sections %}
+                        <tr>
+                            <td>{{ s.name }}</td>
+                            <td>{{ s.course.code }}</td>
+                            <td>{{ s.student_count }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <p class="empty-state">No sections. Add courses and sections via Django admin or seed data.</p>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .welcome-section {
+        margin-bottom: 2rem;
+        padding-bottom: 1.5rem;
+        border-bottom: 1px solid var(--color-border);
+    }
+    .welcome-text {
+        font-size: 1.1rem;
+        color: var(--color-text-muted);
+        margin: 0.25rem 0;
+    }
+    .dashboard-intro {
+        color: var(--color-text-muted);
+        margin: 0.25rem 0 0;
+        font-size: 0.95rem;
+    }
+    .stats-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+    .stat-card {
+        padding: 1.25rem;
+        background: rgba(13, 148, 136, 0.06);
+        border: 1px solid rgba(13, 148, 136, 0.2);
+        border-radius: var(--radius-md);
+        text-align: center;
+        text-decoration: none;
+        color: inherit;
+        display: block;
+        transition: all 0.2s ease;
+    }
+    .stat-card:hover {
+        background: rgba(13, 148, 136, 0.12);
+        border-color: rgba(13, 148, 136, 0.35);
+    }
+    .stat-value {
+        display: block;
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: var(--color-primary);
+    }
+    .stat-label {
+        font-size: 0.875rem;
+        color: var(--color-text-muted);
+    }
+    .section-heading {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--color-text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        margin: 1.5rem 0 1rem;
+    }
+    .action-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        margin-bottom: 1rem;
+    }
+    .table-wrapper { overflow-x: auto; }
+    .data-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    .data-table th, .data-table td {
+        padding: 0.75rem 1rem;
+        text-align: left;
+        border-bottom: 1px solid var(--color-border);
+    }
+    .data-table th {
+        font-weight: 600;
+        color: var(--color-text-muted);
+        font-size: 0.8rem;
+        text-transform: uppercase;
+    }
+    .empty-state {
+        color: var(--color-text-muted);
+        font-style: italic;
+        padding: 1.5rem;
+    }
+</style>
+{% endblock %}

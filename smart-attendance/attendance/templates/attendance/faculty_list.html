@@ -1,0 +1,82 @@
+{% extends 'attendance/base.html' %}
+
+{% block title %}Faculty - Smart Attendance{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h1>Faculty</h1>
+        <a href="{% url 'faculty_create' %}" class="btn btn-primary">+ Add Faculty</a>
+    </div>
+    {% if faculty_list %}
+        <div class="table-wrapper">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Username</th>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Department</th>
+                        <th>Phone</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for f in faculty_list %}
+                        <tr>
+                            <td><strong>{{ f.user.username }}</strong></td>
+                            <td>{{ f.user.get_full_name|default:"—" }}</td>
+                            <td>{{ f.user.email|default:"—" }}</td>
+                            <td>{{ f.department|default:"—" }}</td>
+                            <td>{{ f.phone|default:"—" }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <p class="empty-state">No faculty members yet. <a href="{% url 'faculty_create' %}">Add your first faculty member</a>.</p>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+    }
+    .card-header h1 { margin: 0; }
+    .table-wrapper { overflow-x: auto; }
+    .data-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    .data-table th,
+    .data-table td {
+        padding: 0.875rem 1rem;
+        text-align: left;
+        border-bottom: 1px solid var(--color-border);
+    }
+    .data-table th {
+        font-weight: 600;
+        color: var(--color-text-muted);
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+    .data-table tbody tr:hover {
+        background: rgba(13, 148, 136, 0.04);
+    }
+    .empty-state {
+        color: var(--color-text-muted);
+        padding: 2rem;
+        text-align: center;
+    }
+    .empty-state a {
+        color: var(--color-primary);
+        font-weight: 600;
+    }
+</style>
+{% endblock %}

@@ -1,0 +1,108 @@
+{% extends 'attendance/base.html' %}
+
+{% block title %}Remedial Code - Smart Attendance{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h1>Remedial Code</h1>
+        <a href="{% url 'makeup_list' %}" class="btn btn-secondary">← Back to Make-Up Classes</a>
+    </div>
+    <p class="page-intro">
+        {{ make_up_class.section.course.code }} — {{ make_up_class.section.name }} on {{ make_up_class.scheduled_date }} at {{ make_up_class.start_time|time:"g:i A" }}–{{ make_up_class.end_time|time:"g:i A" }}
+    </p>
+
+    {% if active_code %}
+        <div class="code-display">
+            <label>Current code (share with students)</label>
+            <code class="remedial-code-large">{{ active_code.code }}</code>
+            <p class="code-expiry">
+                {% if active_code.expires_at <= now %}
+                    <span class="badge badge-expired">Expired</span>
+                {% else %}
+                    Expires at {{ active_code.expires_at|date:"M j, Y" }} {{ active_code.expires_at|time:"g:i A" }}
+                {% endif %}
+            </p>
+        </div>
+        <form method="post" class="regenerate-form">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-primary">Regenerate Code</button>
+        </form>
+        <p class="regenerate-note">Regenerating will invalidate the current code. Students will need the new code.</p>
+    {% else %}
+        <p class="empty-code">No active code. Generate one below.</p>
+        <form method="post" class="regenerate-form">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-primary">Generate Code</button>
+        </form>
+    {% endif %}
+
+    <div class="share-link">
+        <p>Students mark attendance at: <a href="{% url 'makeup_mark' %}">{{ request.scheme }}://{{ request.get_host }}{% url 'makeup_mark' %}</a></p>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+    .card-header h1 { margin: 0; }
+    .page-intro {
+        color: var(--color-text-muted);
+        margin: 0 0 1.5rem;
+        font-size: 0.95rem;
+    }
+    .code-display {
+        padding: 2rem;
+        background: rgba(13, 148, 136, 0.06);
+        border-radius: var(--radius-md);
+        border: 2px dashed var(--color-primary);
+        margin-bottom: 1.5rem;
+    }
+    .code-display label {
+        display: block;
+        font-weight: 600;
+        color: var(--color-text-muted);
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-bottom: 0.5rem;
+    }
+    .remedial-code-large {
+        font-family: ui-monospace, monospace;
+        font-size: 2rem;
+        font-weight: 700;
+        padding: 0.5rem 1rem;
+        background: white;
+        color: var(--color-primary-dark);
+        border-radius: var(--radius-sm);
+        display: inline-block;
+        letter-spacing: 0.2em;
+    }
+    .code-expiry { margin: 1rem 0 0; font-size: 0.95rem; color: var(--color-text-muted); }
+    .regenerate-form { margin-bottom: 0.5rem; }
+    .regenerate-note, .empty-code {
+        color: var(--color-text-muted);
+        font-size: 0.9rem;
+        margin: 0 0 1.5rem;
+    }
+    .share-link {
+        margin-top: 2rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid var(--color-border);
+    }
+    .share-link a { color: var(--color-primary); word-break: break-all; }
+    .badge-expired {
+        background: var(--color-error-bg);
+        color: var(--color-error);
+        padding: 0.2rem 0.5rem;
+        border-radius: 9999px;
+        font-size: 0.85rem;
+    }
+</style>
+{% endblock %}

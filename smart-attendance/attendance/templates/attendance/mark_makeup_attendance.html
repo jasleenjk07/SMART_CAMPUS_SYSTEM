@@ -1,0 +1,307 @@
+{% extends 'attendance/base.html' %}
+
+{% block title %}Mark Make-Up Attendance - {{ make_up_class }} - Smart Attendance{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h1>Mark Make-Up Attendance</h1>
+        <a href="{% url 'makeup_list' %}" class="btn btn-secondary">← Back to Make-Up Classes</a>
+    </div>
+    <p class="section-info">
+        <strong>{{ section.course.code }} — {{ section.name }}</strong>
+        <br>
+        <span class="makeup-date">{{ make_up_class.scheduled_date }} · {{ make_up_class.start_time|time:"g:i A" }} – {{ make_up_class.end_time|time:"g:i A" }}</span>
+    </p>
+
+    {% if students %}
+    <form method="post" id="attendance-form">
+        {% csrf_token %}
+
+        <div class="actions-row">
+            <button type="button" class="btn btn-primary mark-all-present">Mark All Present</button>
+            <button type="button" class="btn btn-outline mark-all-absent">Mark All Absent</button>
+            <button type="submit" class="btn btn-success">Save Attendance</button>
+        </div>
+
+        <div class="attendance-table-wrapper">
+            <table class="attendance-table">
+                <thead>
+                    <tr>
+                        <th class="col-status">Status</th>
+                        <th class="col-roll">Roll #</th>
+                        <th class="col-name">Name</th>
+                        <th class="col-email">Email</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for student in students %}
+                    <tr class="student-row" data-student-id="{{ student.pk }}">
+                        <td class="col-status">
+                            <label class="toggle-cell" for="present-{{ student.pk }}">
+                                <input type="checkbox" name="present" value="{{ student.pk }}" class="present-checkbox"
+                                       id="present-{{ student.pk }}" aria-label="{{ student.name }} - mark present"
+                                       {% if student.pk in already_present_ids or not already_present_ids %}checked{% endif %}>
+                                <span class="toggle-switch"></span>
+                                <span class="status-label">Present</span>
+                            </label>
+                        </td>
+                        <td class="col-roll"><span class="roll-badge">{{ student.roll_number }}</span></td>
+                        <td class="col-name">{{ student.name }}</td>
+                        <td class="col-email">{{ student.email|default:"—" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="attendance-summary" id="attendance-summary">
+            <span class="summary-item summary-present">
+                <span class="summary-count" id="present-count">{{ students|length }}</span> present
+            </span>
+            <span class="summary-item summary-absent">
+                <span class="summary-count" id="absent-count">0</span> absent
+            </span>
+        </div>
+
+        <div class="actions-row bottom-actions">
+            <button type="button" class="btn btn-primary mark-all-present">Mark All Present</button>
+            <button type="button" class="btn btn-outline mark-all-absent">Mark All Absent</button>
+            <button type="submit" class="btn btn-success">Save Attendance</button>
+        </div>
+    </form>
+    {% else %}
+    <p class="empty-state">No students in this section.</p>
+    {% endif %}
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const checkboxes = document.querySelectorAll('.present-checkbox');
+    const studentRows = document.querySelectorAll('.student-row');
+    const presentCountEl = document.getElementById('present-count');
+    const absentCountEl = document.getElementById('absent-count');
+
+    function updateRowStyles() {
+        studentRows.forEach(function(row) {
+            const cb = row.querySelector('.present-checkbox');
+            const label = row.querySelector('.status-label');
+            const isPresent = cb.checked;
+            row.classList.toggle('row-absent', !isPresent);
+            if (label) label.textContent = isPresent ? 'Present' : 'Absent';
+        });
+    }
+
+    function updateSummary() {
+        const present = Array.from(checkboxes).filter(function(cb) { return cb.checked; }).length;
+        const absent = checkboxes.length - present;
+        if (presentCountEl) presentCountEl.textContent = present;
+        if (absentCountEl) absentCountEl.textContent = absent;
+    }
+
+    function onToggle() {
+        updateRowStyles();
+        updateSummary();
+    }
+
+    checkboxes.forEach(function(cb) {
+        cb.addEventListener('change', onToggle);
+    });
+
+    studentRows.forEach(function(row) {
+        row.addEventListener('click', function(e) {
+            if (e.target.closest('.toggle-cell')) return;
+            const cb = row.querySelector('.present-checkbox');
+            if (cb) {
+                cb.checked = !cb.checked;
+                onToggle();
+            }
+        });
+    });
+
+    document.querySelectorAll('.mark-all-present').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            checkboxes.forEach(function(cb) { cb.checked = true; });
+            onToggle();
+        });
+    });
+
+    document.querySelectorAll('.mark-all-absent').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            checkboxes.forEach(function(cb) { cb.checked = false; });
+            onToggle();
+        });
+    });
+
+    updateRowStyles();
+    updateSummary();
+});
+</script>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+    .card-header h1 { margin: 0; }
+    .section-info {
+        color: var(--color-text-muted);
+        margin-bottom: 1.5rem;
+        font-size: 1.05rem;
+    }
+    .makeup-date {
+        font-size: 0.95rem;
+        color: var(--color-text-muted);
+        margin-top: 0.25rem;
+        display: inline-block;
+    }
+    .actions-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        margin-bottom: 1.5rem;
+    }
+    .actions-row.bottom-actions {
+        margin-top: 1.5rem;
+    }
+    .attendance-summary {
+        margin-top: 1.25rem;
+        padding: 1rem 1.25rem;
+        background: #f8fafc;
+        border-radius: var(--radius-md);
+        display: flex;
+        gap: 1.5rem;
+        font-weight: 600;
+    }
+    .summary-item {
+        display: flex;
+        align-items: center;
+        gap: 0.35rem;
+    }
+    .summary-present .summary-count { color: var(--color-success); }
+    .summary-absent .summary-count { color: var(--color-error); }
+    .attendance-table-wrapper {
+        overflow-x: auto;
+        border-radius: var(--radius-md);
+        border: 1px solid var(--color-border);
+        overflow: hidden;
+    }
+    .attendance-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    .attendance-table thead {
+        background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+        position: sticky;
+        top: 0;
+        z-index: 1;
+    }
+    .attendance-table th {
+        padding: 0.875rem 1.25rem;
+        text-align: left;
+        font-weight: 600;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--color-text-muted);
+        border-bottom: 2px solid var(--color-border);
+    }
+    .attendance-table td {
+        padding: 1rem 1.25rem;
+        border-bottom: 1px solid var(--color-border);
+        vertical-align: middle;
+    }
+    .attendance-table tbody tr {
+        transition: background 0.15s ease;
+        cursor: pointer;
+    }
+    .attendance-table tbody tr:last-child td {
+        border-bottom: none;
+    }
+    .attendance-table tbody tr:hover {
+        background: rgba(13, 148, 136, 0.04);
+    }
+    .attendance-table tbody tr.row-absent {
+        background: rgba(220, 38, 38, 0.05);
+    }
+    .attendance-table tbody tr.row-absent:hover {
+        background: rgba(220, 38, 38, 0.09);
+    }
+    .col-status { width: 160px; }
+    .col-roll { width: 120px; }
+    .col-name { min-width: 180px; }
+    .toggle-cell {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        cursor: pointer;
+        user-select: none;
+    }
+    .present-checkbox {
+        position: absolute;
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+    .toggle-switch {
+        position: relative;
+        width: 44px;
+        height: 24px;
+        background: var(--color-border);
+        border-radius: 12px;
+        transition: background 0.2s ease;
+        flex-shrink: 0;
+    }
+    .toggle-switch::after {
+        content: '';
+        position: absolute;
+        top: 2px;
+        left: 2px;
+        width: 20px;
+        height: 20px;
+        background: white;
+        border-radius: 50%;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        transition: transform 0.2s ease;
+    }
+    .present-checkbox:checked + .toggle-switch {
+        background: var(--color-primary);
+    }
+    .present-checkbox:checked + .toggle-switch::after {
+        transform: translateX(20px);
+    }
+    .row-absent .present-checkbox:not(:checked) + .toggle-switch {
+        background: #fecaca;
+    }
+    .status-label {
+        font-weight: 600;
+        font-size: 0.9rem;
+        color: var(--color-success);
+    }
+    .row-absent .status-label {
+        color: var(--color-error);
+    }
+    .roll-badge {
+        display: inline-block;
+        padding: 0.3rem 0.65rem;
+        background: rgba(13, 148, 136, 0.12);
+        color: var(--color-primary-dark);
+        font-weight: 600;
+        font-size: 0.875rem;
+        border-radius: 6px;
+    }
+    .row-absent .roll-badge {
+        background: rgba(220, 38, 38, 0.12);
+        color: #b91c1c;
+    }
+    .empty-state {
+        color: var(--color-text-muted);
+        padding: 2rem;
+        text-align: center;
+    }
+</style>
+{% endblock %}

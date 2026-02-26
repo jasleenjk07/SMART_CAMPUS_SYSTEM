@@ -1,0 +1,164 @@
+{% extends 'attendance/base.html' %}
+
+{% block title %}Make-Up Classes - Smart Attendance{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h1>Make-Up Classes</h1>
+        <a href="{% url 'makeup_create' %}" class="btn btn-primary">+ Schedule Make-Up Class</a>
+    </div>
+    <p class="page-intro">
+        Your scheduled make-up classes. Click <strong>Mark Attendance</strong> to mark attendance with the student list (like regular classes).
+    </p>
+
+    {% if make_up_classes %}
+        <div class="table-wrapper">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Section</th>
+                        <th>Date</th>
+                        <th>Time</th>
+                        <th>Classroom</th>
+                        <th>Remedial Code</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for mc in make_up_classes %}
+                        <tr>
+                            <td>
+                                <strong>{{ mc.section.course.code }} — {{ mc.section.name }}</strong>
+                            </td>
+                            <td>{{ mc.scheduled_date }}</td>
+                            <td>{{ mc.start_time|time:"g:i A" }} — {{ mc.end_time|time:"g:i A" }}</td>
+                            <td>
+                                {% if mc.classroom %}
+                                    {{ mc.classroom }}
+                                {% else %}
+                                    <span class="text-muted">—</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% for rc in mc.remedial_codes.all %}
+                                    {% if forloop.first %}
+                                        <code class="remedial-code">{{ rc.code }}</code>
+                                    {% endif %}
+                                {% empty %}
+                                    <span class="text-muted">—</span>
+                                {% endfor %}
+                            </td>
+                            <td>
+                                {% for rc in mc.remedial_codes.all %}
+                                    {% if forloop.first %}
+                                        {% if rc.is_used %}
+                                            <span class="badge badge-used">Used</span>
+                                        {% elif rc.expires_at <= now %}
+                                            <span class="badge badge-expired">Expired</span>
+                                        {% else %}
+                                            <span class="badge badge-active">Active</span>
+                                        {% endif %}
+                                    {% endif %}
+                                {% empty %}
+                                    <span class="text-muted">—</span>
+                                {% endfor %}
+                            </td>
+                            <td>
+                                <a href="{% url 'makeup_mark_attendance' mc.pk %}" class="btn btn-small btn-primary">Mark Attendance</a>
+                                <a href="{% url 'makeup_code' mc.pk %}" class="btn btn-small btn-outline">View Code</a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="empty-state-box">
+            <p class="empty-state">You have not scheduled any make-up classes yet.</p>
+            <a href="{% url 'makeup_create' %}" class="btn btn-primary">Schedule your first make-up class</a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+    .card-header h1 { margin: 0; }
+    .page-intro {
+        color: var(--color-text-muted);
+        margin: 0 0 1.5rem;
+        font-size: 0.95rem;
+    }
+    .table-wrapper { overflow-x: auto; margin-bottom: 1rem; }
+    .data-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    .data-table th,
+    .data-table td {
+        padding: 0.875rem 1rem;
+        text-align: left;
+        border-bottom: 1px solid var(--color-border);
+    }
+    .data-table th {
+        font-weight: 600;
+        color: var(--color-text-muted);
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+    .data-table tbody tr:hover {
+        background: rgba(13, 148, 136, 0.04);
+    }
+    .remedial-code {
+        font-family: ui-monospace, monospace;
+        font-size: 1rem;
+        font-weight: 600;
+        padding: 0.25rem 0.5rem;
+        background: rgba(13, 148, 136, 0.12);
+        color: var(--color-primary-dark);
+        border-radius: var(--radius-sm);
+    }
+    .badge {
+        display: inline-block;
+        padding: 0.25rem 0.6rem;
+        font-size: 0.8rem;
+        font-weight: 600;
+        border-radius: 9999px;
+    }
+    .badge-active {
+        background: var(--color-success-bg);
+        color: var(--color-success);
+    }
+    .badge-expired {
+        background: var(--color-error-bg);
+        color: var(--color-error);
+    }
+    .badge-used {
+        background: var(--color-warning-bg);
+        color: var(--color-warning);
+    }
+    .text-muted { color: var(--color-text-muted); }
+    .empty-state-box {
+        padding: 3rem;
+        text-align: center;
+        border: 2px dashed var(--color-border);
+        border-radius: var(--radius-lg);
+        background: rgba(13, 148, 136, 0.02);
+    }
+    .empty-state-box .empty-state {
+        margin: 0 0 1rem;
+        color: var(--color-text-muted);
+        font-style: italic;
+    }
+</style>
+{% endblock %}
+

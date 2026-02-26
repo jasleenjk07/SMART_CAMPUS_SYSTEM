@@ -1,0 +1,42 @@
+{% extends 'attendance/base.html' %}
+
+{% block title %}Delete Schedule - Smart Attendance{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h1>Delete Class Schedule</h1>
+    <p>Are you sure you want to delete this schedule?</p>
+    <p class="schedule-summary">
+        <strong>{{ schedule.section }}</strong> in {{ schedule.classroom }}
+        — {{ schedule.get_day_of_week_display }} {{ schedule.start_time|time:"g:i A" }}–{{ schedule.end_time|time:"g:i A" }}
+    </p>
+    <form method="post" class="delete-form">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">Delete Schedule</button>
+        <a href="{% url 'campus_resources' %}" class="btn btn-secondary">Cancel</a>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .schedule-summary {
+        background: var(--color-border);
+        padding: 1rem 1.25rem;
+        border-radius: var(--radius-sm);
+        margin: 1rem 0 1.5rem;
+    }
+    .delete-form {
+        display: flex;
+        gap: 1rem;
+        margin-top: 1rem;
+    }
+    .btn-danger {
+        background: var(--color-error);
+        color: white;
+    }
+    .btn-danger:hover {
+        background: #b91c1c;
+    }
+</style>
+{% endblock %}

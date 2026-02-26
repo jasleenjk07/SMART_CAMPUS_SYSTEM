@@ -1,0 +1,270 @@
+{% extends 'attendance/base.html' %}
+
+{% block title %}Analytics - Smart Attendance{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h1>Analytics Dashboard</h1>
+    <p class="page-intro">Capacity utilization, workload distribution, and rush prediction.</p>
+
+    <h2>Rush Prediction</h2>
+    <p class="section-desc">Peak attendance marking hours based on historical records. Higher counts indicate busier periods (e.g., 9–10 AM, 2–3 PM).</p>
+    {% if rush_data %}
+        {% with top_count=rush_data.0.count %}
+        {% if top_count > 0 %}
+        <div class="rush-summary">
+            <p class="rush-hours-label">Peak rush hours:</p>
+            <p class="rush-hours-list">
+                {% for item in rush_data %}
+                    {% if item.count == top_count %}
+                        <span class="rush-badge">{{ item.hour_label }}</span>
+                    {% endif %}
+                {% endfor %}
+            </p>
+        </div>
+        {% endif %}
+        {% endwith %}
+        <div class="table-wrapper">
+            <table class="data-table rush-table">
+                <thead>
+                    <tr>
+                        <th>Time slot</th>
+                        <th>Attendance records</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in rush_data %}
+                        <tr class="{% if forloop.counter <= 3 and item.count > 0 %}rush-row{% endif %}">
+                            <td><strong>{{ item.hour_label }}</strong></td>
+                            <td>{{ item.count }}</td>
+                            <td>
+                                {% if item.count > 0 and rush_data.0.count > 0 %}
+                                    <span class="rush-bar-bg">
+                                        <span class="rush-bar-fill" style="width: {% widthratio item.count rush_data.0.count 100 %}%"></span>
+                                    </span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <p class="empty-state">No attendance records yet. Rush prediction will appear once attendance is marked.</p>
+    {% endif %}
+
+    <h2>Capacity Utilization</h2>
+    <p class="section-desc">Average utilization per classroom: (enrolled students / capacity) × 100 across scheduled slots.</p>
+    {% if capacity_data %}
+        {% for block_data in capacity_data %}
+            <div class="block-section">
+                <h3 class="block-name">{{ block_data.block.code }} — {{ block_data.block.name }}</h3>
+                {% if block_data.classrooms %}
+                    <div class="table-wrapper">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Classroom</th>
+                                    <th>Capacity</th>
+                                    <th>Avg Enrolled</th>
+                                    <th>Utilization</th>
+                                    <th>Slots</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in block_data.classrooms %}
+                                    <tr>
+                                        <td><strong>{{ item.classroom.room_number }}</strong> {{ item.classroom.name }}</td>
+                                        <td>{{ item.capacity }}</td>
+                                        <td>{{ item.enrolled }}</td>
+                                        <td>
+                                            <span class="util-cell">
+                                                <span class="util-bar-bg">
+                                                    <span class="util-bar-fill" style="width: {% if item.utilization > 100 %}100{% else %}{{ item.utilization }}{% endif %}%"></span>
+                                                </span>
+                                                <span class="util-value">{{ item.utilization }}%</span>
+                                            </span>
+                                        </td>
+                                        <td>{{ item.schedules_count }}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <p class="block-summary">Block average: {{ block_data.block_avg_utilization }}%</p>
+                {% else %}
+                    <p class="empty-inline">No scheduled classrooms.</p>
+                {% endif %}
+            </div>
+        {% endfor %}
+    {% else %}
+        <p class="empty-state">No blocks or classrooms with schedules. Add them in the admin.</p>
+    {% endif %}
+
+    <h2>Workload Distribution</h2>
+    <p class="section-desc">Faculty teaching load: courses assigned, sections taught, and total credit hours.</p>
+    {% if workload_data %}
+        <div class="table-wrapper">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Faculty</th>
+                        <th>Courses Assigned</th>
+                        <th>Sections Taught</th>
+                        <th>Total Credits</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in workload_data %}
+                        <tr>
+                            <td><strong>{{ item.faculty.user.get_full_name|default:item.faculty.user.username }}</strong></td>
+                            <td>{{ item.courses_count }}</td>
+                            <td>{{ item.sections_count }}</td>
+                            <td>{{ item.total_credits }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <p class="empty-state">No faculty with course assignments. Add assignments in the admin.</p>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .page-intro {
+        color: var(--color-text-muted);
+        margin: 0 0 1.5rem;
+        font-size: 0.95rem;
+    }
+    .section-desc {
+        color: var(--color-text-muted);
+        font-size: 0.9rem;
+        margin: -0.5rem 0 1rem;
+    }
+    .block-section {
+        margin-bottom: 2rem;
+    }
+    .block-name {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--color-text);
+        margin: 0 0 0.75rem;
+    }
+    .block-summary {
+        font-size: 0.9rem;
+        color: var(--color-text-muted);
+        margin: 0.5rem 0 0;
+    }
+    .table-wrapper { overflow-x: auto; margin-bottom: 1rem; }
+    .data-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    .data-table th,
+    .data-table td {
+        padding: 0.875rem 1rem;
+        text-align: left;
+        border-bottom: 1px solid var(--color-border);
+    }
+    .data-table th {
+        font-weight: 600;
+        color: var(--color-text-muted);
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+    .data-table tbody tr:hover {
+        background: rgba(13, 148, 136, 0.04);
+    }
+    .util-cell {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    .util-bar-bg {
+        display: inline-block;
+        width: 80px;
+        height: 8px;
+        background: var(--color-border);
+        border-radius: var(--radius-sm);
+        overflow: hidden;
+    }
+    .util-bar-fill {
+        display: block;
+        height: 100%;
+        background: var(--color-primary);
+        border-radius: var(--radius-sm);
+        transition: width 0.3s ease;
+    }
+    .util-value {
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: var(--color-text);
+    }
+    .empty-state,
+    .empty-inline {
+        color: var(--color-text-muted);
+        font-style: italic;
+    }
+    .empty-state { padding: 2rem; text-align: center; }
+    .empty-inline { margin: 0.5rem 0; }
+    .rush-summary {
+        margin-bottom: 1rem;
+        padding: 1rem 1.25rem;
+        background: rgba(13, 148, 136, 0.06);
+        border-radius: var(--radius-md);
+        border-left: 4px solid var(--color-primary);
+    }
+    .rush-hours-label {
+        margin: 0 0 0.5rem;
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: var(--color-text-muted);
+    }
+    .rush-hours-list {
+        margin: 0;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+    .rush-badge {
+        display: inline-block;
+        padding: 0.35rem 0.75rem;
+        background: var(--color-primary);
+        color: white;
+        border-radius: var(--radius-sm);
+        font-size: 0.9rem;
+        font-weight: 600;
+    }
+    .rush-table td:nth-child(3) {
+        min-width: 120px;
+    }
+    .rush-bar-bg {
+        display: inline-block;
+        width: 100px;
+        height: 8px;
+        background: var(--color-border);
+        border-radius: var(--radius-sm);
+        overflow: hidden;
+    }
+    .rush-bar-fill {
+        display: block;
+        height: 100%;
+        background: var(--color-primary);
+        border-radius: var(--radius-sm);
+        transition: width 0.3s ease;
+    }
+    .rush-row {
+        background: rgba(13, 148, 136, 0.04);
+    }
+    h2 {
+        margin-top: 2rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid var(--color-border);
+    }
+</style>
+{% endblock %}

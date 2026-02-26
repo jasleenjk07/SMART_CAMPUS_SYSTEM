@@ -1,0 +1,5 @@
+.DS_Store
+**/.DS_Store
+smart-attendance/db.sqlite3
+**/__pycache__/
+**/*.pyc

@@ -1,0 +1,129 @@
+{% extends 'attendance/base.html' %}
+
+{% block title %}Students - Smart Attendance{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h1>Students</h1>
+        <a href="{% url 'student_create' %}" class="btn btn-primary">+ Add Student</a>
+    </div>
+    {% if sections %}
+    <form method="get" class="filter-form">
+        <label for="filter-section">Filter by section</label>
+        <select name="section" id="filter-section" class="form-control filter-select" onchange="this.form.submit()">
+            <option value="" {% if not selected_section_id %}selected{% endif %}>All sections</option>
+            {% for section in sections %}
+            <option value="{{ section.pk }}" {% if selected_section_id == section.pk|stringformat:"d" %}selected{% endif %}>{{ section }}</option>
+            {% endfor %}
+        </select>
+    </form>
+    {% endif %}
+    {% if students %}
+        <div class="table-wrapper">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Roll #</th>
+                        <th>Name</th>
+                        <th>Section</th>
+                        <th>Email</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for student in students %}
+                        <tr>
+                            <td><strong>{{ student.roll_number }}</strong></td>
+                            <td>{{ student.name }}</td>
+                            <td><span class="badge">{{ student.section }}</span></td>
+                            <td>{{ student.email|default:"—" }}</td>
+                            <td>
+                                <a href="{% url 'student_edit' student.pk %}" class="btn btn-small btn-secondary">Edit</a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <p class="empty-state">No students yet. <a href="{% url 'student_create' %}">Add your first student</a>.</p>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+    }
+    .card-header h1 { margin: 0; }
+    .filter-form {
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+    .filter-form label {
+        font-weight: 600;
+        color: var(--color-text-muted);
+        font-size: 0.95rem;
+    }
+    .filter-select {
+        padding: 0.5rem 1rem;
+        border: 2px solid var(--color-border);
+        border-radius: var(--radius-sm);
+        font-size: 0.95rem;
+        font-family: inherit;
+        min-width: 220px;
+        background: var(--color-surface);
+        cursor: pointer;
+    }
+    .filter-select:focus {
+        outline: none;
+        border-color: var(--color-primary);
+    }
+    .table-wrapper { overflow-x: auto; }
+    .data-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    .data-table th,
+    .data-table td {
+        padding: 0.875rem 1rem;
+        text-align: left;
+        border-bottom: 1px solid var(--color-border);
+    }
+    .data-table th {
+        font-weight: 600;
+        color: var(--color-text-muted);
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+    .data-table tbody tr:hover {
+        background: rgba(13, 148, 136, 0.04);
+    }
+    .badge {
+        display: inline-block;
+        padding: 0.2rem 0.6rem;
+        background: rgba(13, 148, 136, 0.15);
+        color: var(--color-primary-dark);
+        font-size: 0.85rem;
+        font-weight: 500;
+        border-radius: 6px;
+    }
+    .empty-state {
+        color: var(--color-text-muted);
+        padding: 2rem;
+        text-align: center;
+    }
+    .empty-state a {
+        color: var(--color-primary);
+        font-weight: 600;
+    }
+</style>
+{% endblock %}

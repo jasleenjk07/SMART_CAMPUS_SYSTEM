@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Smart Attendance{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --color-bg: #faf8f5;
+            --color-surface: #ffffff;
+            --color-primary: #0d9488;
+            --color-primary-dark: #0f766e;
+            --color-primary-light: #5eead4;
+            --color-text: #1a1a1a;
+            --color-text-muted: #64748b;
+            --color-border: #e2e8f0;
+            --color-success: #059669;
+            --color-success-bg: #d1fae5;
+            --color-error: #dc2626;
+            --color-error-bg: #fee2e2;
+            --color-warning: #d97706;
+            --color-warning-bg: #fef3c7;
+            --shadow-sm: 0 1px 2px rgba(0,0,0,0.04);
+            --shadow-md: 0 4px 12px rgba(0,0,0,0.06);
+            --shadow-lg: 0 10px 40px rgba(0,0,0,0.08);
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 16px;
+        }
+        * { box-sizing: border-box; }
+        body {
+            font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+            margin: 0;
+            min-height: 100vh;
+            background: var(--color-bg);
+            color: var(--color-text);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+        }
+        .navbar {
+            background: var(--color-surface);
+            padding: 0.875rem 2rem;
+            box-shadow: var(--shadow-sm);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--color-border);
+        }
+        .navbar-brand {
+            font-weight: 700;
+            font-size: 1.35rem;
+            color: var(--color-primary);
+            text-decoration: none;
+            letter-spacing: -0.02em;
+        }
+        .navbar-brand:hover {
+            color: var(--color-primary-dark);
+        }
+        .navbar-links {
+            display: flex;
+            gap: 0.25rem;
+            align-items: center;
+        }
+        .navbar-links a {
+            color: var(--color-text-muted);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.95rem;
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius-sm);
+            transition: all 0.2s ease;
+        }
+        .navbar-links a:hover {
+            color: var(--color-primary);
+            background: rgba(13, 148, 136, 0.08);
+        }
+        .navbar-links .logout {
+            color: var(--color-error);
+        }
+        .navbar-links .logout:hover {
+            background: rgba(220, 38, 38, 0.08);
+        }
+        .inline-form { display: inline; }
+        .inline-form button {
+            background: none;
+            border: none;
+            font: inherit;
+            cursor: pointer;
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius-sm);
+            color: var(--color-error);
+            font-weight: 500;
+            transition: background 0.2s ease;
+        }
+        .inline-form button:hover {
+            background: rgba(220, 38, 38, 0.08);
+        }
+        .main-content {
+            padding: 2rem;
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+        .card {
+            background: var(--color-surface);
+            padding: 2rem;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--color-border);
+        }
+        .card h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--color-text);
+            margin: 0 0 0.5rem;
+            letter-spacing: -0.02em;
+        }
+        .card h2 {
+            font-size: 1.15rem;
+            font-weight: 600;
+            color: var(--color-text);
+            margin: 1.5rem 0 0.75rem;
+        }
+        .messages {
+            list-style: none;
+            padding: 0;
+            margin: 0 0 1.5rem;
+        }
+        .messages li {
+            padding: 0.875rem 1.25rem;
+            border-radius: var(--radius-md);
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+        .messages .success { background: var(--color-success-bg); color: #065f46; }
+        .messages .error { background: var(--color-error-bg); color: #991b1b; }
+        .messages .warning { background: var(--color-warning-bg); color: #92400e; }
+        .messages .info { background: #dbeafe; color: #1e40af; }
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.625rem 1.25rem;
+            border-radius: var(--radius-sm);
+            font-weight: 600;
+            font-size: 0.95rem;
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: inherit;
+        }
+        .btn-primary {
+            background: var(--color-primary);
+            color: white;
+        }
+        .btn-primary:hover {
+            background: var(--color-primary-dark);
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-md);
+        }
+        .btn-secondary {
+            background: var(--color-border);
+            color: var(--color-text-muted);
+        }
+        .btn-secondary:hover {
+            background: #cbd5e1;
+            color: var(--color-text);
+        }
+        .btn-success {
+            background: var(--color-success);
+            color: white;
+        }
+        .btn-success:hover {
+            background: #047857;
+            transform: translateY(-1px);
+        }
+        .btn-outline {
+            background: transparent;
+            color: var(--color-text-muted);
+            border: 2px solid var(--color-border);
+        }
+        .btn-outline:hover {
+            border-color: var(--color-primary);
+            color: var(--color-primary);
+        }
+        .btn-small {
+            padding: 0.35rem 0.75rem;
+            font-size: 0.875rem;
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <nav class="navbar">
+        <a href="{% url 'dashboard' %}" class="navbar-brand">Smart Attendance</a>
+        <div class="navbar-links">
+            {% if user_role == 'faculty' %}
+                <a href="{% url 'faculty_dashboard' %}">Dashboard</a>
+                <a href="{% url 'student_list' %}">Students</a>
+                <a href="{% url 'campus_resources' %}">Campus Resources</a>
+                <a href="{% url 'makeup_list' %}">Make-Up Classes</a>
+                <a href="{% url 'analytics' %}">Analytics</a>
+                <a href="{% url 'notification_logs' %}">Notifications</a>
+            {% elif user_role == 'student' %}
+                <a href="{% url 'student_dashboard' %}">Dashboard</a>
+                <a href="{% url 'makeup_mark' %}">Mark Make-Up</a>
+            {% elif user_role == 'staff' %}
+                <a href="{% url 'admin_dashboard' %}">Dashboard</a>
+                <a href="{% url 'faculty_list' %}">Faculty</a>
+                <a href="{% url 'student_list' %}">Students</a>
+                <a href="{% url 'campus_resources' %}">Campus</a>
+                <a href="{% url 'analytics' %}">Analytics</a>
+                <a href="{% url 'notification_logs' %}">Notifications</a>
+            {% endif %}
+            <form method="POST" action="{% url 'logout' %}" class="inline-form">
+                {% csrf_token %}
+                <button type="submit" class="logout">Logout</button>
+            </form>
+        </div>
+    </nav>
+    <main class="main-content">
+        {% if messages %}
+            <ul class="messages">
+                {% for message in messages %}
+                    <li class="{{ message.tags }}">{{ message }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+        {% block content %}{% endblock %}
+    </main>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,170 @@
+{% extends 'attendance/base.html' %}
+
+{% block title %}Student Dashboard - Smart Attendance{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="welcome-section">
+        <h1>Student Dashboard</h1>
+        <p class="welcome-text">Welcome, {{ student.name }}!</p>
+        <p class="dashboard-intro">{{ section.course.code }} — {{ section.name }}</p>
+    </div>
+
+    <div class="stats-row">
+        <div class="stat-card">
+            <span class="stat-value">{{ attendance_pct }}%</span>
+            <span class="stat-label">Attendance (last 30 days)</span>
+        </div>
+        <div class="stat-card">
+            <span class="stat-value">{{ total_days }}</span>
+            <span class="stat-label">Classes recorded</span>
+        </div>
+    </div>
+
+    <h2 class="section-heading">Recent Attendance</h2>
+    {% if records %}
+        <div class="table-wrapper">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for r in records %}
+                        <tr>
+                            <td>{{ r.date|date:"M d, Y" }}</td>
+                            <td>
+                                <span class="status-badge status-{{ r.status }}">
+                                    {{ r.get_status_display|default:r.status|title }}
+                                </span>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <p class="empty-state">No attendance records yet for the last 30 days.</p>
+    {% endif %}
+
+    <h2 class="section-heading">Class Schedule</h2>
+    {% if schedules %}
+        <div class="table-wrapper">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Day</th>
+                        <th>Time</th>
+                        <th>Room</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for s in schedules %}
+                        <tr>
+                            <td>{{ s.get_day_of_week_display }}</td>
+                            <td>{{ s.start_time|time:"g:i A" }} – {{ s.end_time|time:"g:i A" }}</td>
+                            <td>{{ s.classroom }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <p class="empty-state">No schedule available for this section.</p>
+    {% endif %}
+
+    <p class="makeup-link">
+        <a href="{% url 'makeup_mark' %}" class="btn btn-outline">Mark Make-Up Attendance</a>
+    </p>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .welcome-section {
+        margin-bottom: 1.5rem;
+        padding-bottom: 1.5rem;
+        border-bottom: 1px solid var(--color-border);
+    }
+    .welcome-text {
+        font-size: 1.1rem;
+        color: var(--color-text-muted);
+        margin: 0.25rem 0;
+    }
+    .dashboard-intro {
+        color: var(--color-text-muted);
+        margin: 0.25rem 0 0;
+        font-size: 0.95rem;
+    }
+    .stats-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+    .stat-card {
+        padding: 1.25rem;
+        background: rgba(13, 148, 136, 0.06);
+        border: 1px solid rgba(13, 148, 136, 0.2);
+        border-radius: var(--radius-md);
+        text-align: center;
+    }
+    .stat-value {
+        display: block;
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: var(--color-primary);
+    }
+    .stat-label {
+        font-size: 0.875rem;
+        color: var(--color-text-muted);
+    }
+    .section-heading {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--color-text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        margin: 1.5rem 0 1rem;
+    }
+    .table-wrapper { overflow-x: auto; margin-bottom: 1rem; }
+    .data-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    .data-table th, .data-table td {
+        padding: 0.75rem 1rem;
+        text-align: left;
+        border-bottom: 1px solid var(--color-border);
+    }
+    .data-table th {
+        font-weight: 600;
+        color: var(--color-text-muted);
+        font-size: 0.8rem;
+        text-transform: uppercase;
+    }
+    .status-badge {
+        display: inline-block;
+        padding: 0.25rem 0.6rem;
+        border-radius: 6px;
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
+    .status-present {
+        background: var(--color-success-bg);
+        color: var(--color-success);
+    }
+    .status-absent {
+        background: var(--color-error-bg);
+        color: var(--color-error);
+    }
+    .empty-state {
+        color: var(--color-text-muted);
+        font-style: italic;
+        padding: 1.5rem;
+    }
+    .makeup-link { margin-top: 1.5rem; }
+</style>
+{% endblock %}

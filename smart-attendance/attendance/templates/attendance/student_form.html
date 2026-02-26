@@ -1,0 +1,154 @@
+{% extends 'attendance/base.html' %}
+
+{% block title %}{% if is_edit %}Edit Student{% else %}Add Student{% endif %} - Smart Attendance{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h1>{% if is_edit %}Edit Student{% else %}Add Student{% endif %}</h1>
+        <a href="{% url 'student_list' %}" class="btn btn-secondary">← Back to Students</a>
+    </div>
+    <form method="post" novalidate class="styled-form">
+        {% csrf_token %}
+        {% if form.non_field_errors %}
+            <ul class="form-errors">
+                {% for error in form.non_field_errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+        <div class="form-row">
+            <div class="form-group">
+                <label for="{{ form.name.id_for_label }}">{{ form.name.label }}{% if form.name.field.required %} *{% endif %}</label>
+                {{ form.name }}
+                {% if form.name.errors %}
+                    <ul class="field-errors">{% for e in form.name.errors %}<li>{{ e }}</li>{% endfor %}</ul>
+                {% endif %}
+            </div>
+            <div class="form-group">
+                <label for="{{ form.roll_number.id_for_label }}">{{ form.roll_number.label }}{% if form.roll_number.field.required %} *{% endif %}</label>
+                {{ form.roll_number }}
+                {% if form.roll_number.errors %}
+                    <ul class="field-errors">{% for e in form.roll_number.errors %}<li>{{ e }}</li>{% endfor %}</ul>
+                {% endif %}
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                <label for="{{ form.email.id_for_label }}">{{ form.email.label }}</label>
+                {{ form.email }}
+                {% if form.email.errors %}
+                    <ul class="field-errors">{% for e in form.email.errors %}<li>{{ e }}</li>{% endfor %}</ul>
+                {% endif %}
+            </div>
+            <div class="form-group">
+                <label for="{{ form.phone.id_for_label }}">{{ form.phone.label }}</label>
+                {{ form.phone }}
+            </div>
+        </div>
+        <div class="form-group full-width">
+            <label for="{{ form.section.id_for_label }}">{{ form.section.label }}{% if form.section.field.required %} *{% endif %}</label>
+            {{ form.section }}
+            {% if form.section.errors %}
+                <ul class="field-errors">{% for e in form.section.errors %}<li>{{ e }}</li>{% endfor %}</ul>
+            {% endif %}
+        </div>
+        <h3 class="sub-section">Parent / Guardian</h3>
+        <div class="form-row">
+            <div class="form-group">
+                <label for="{{ form.parent_name.id_for_label }}">{{ form.parent_name.label }}</label>
+                {{ form.parent_name }}
+            </div>
+            <div class="form-group">
+                <label for="{{ form.parent_email.id_for_label }}">{{ form.parent_email.label }}</label>
+                {{ form.parent_email }}
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                <label for="{{ form.parent_phone.id_for_label }}">{{ form.parent_phone.label }}</label>
+                {{ form.parent_phone }}
+            </div>
+            <div class="form-group full-width">
+                <label for="{{ form.address.id_for_label }}">{{ form.address.label }}</label>
+                {{ form.address }}
+            </div>
+        </div>
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">{% if is_edit %}Save Changes{% else %}Create Student{% endif %}</button>
+            <a href="{% url 'student_list' %}" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+    }
+    .card-header h1 { margin: 0; }
+    .styled-form .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.25rem;
+        margin-bottom: 1.25rem;
+    }
+    .form-group.full-width {
+        grid-column: 1 / -1;
+    }
+    @media (max-width: 640px) {
+        .styled-form .form-row { grid-template-columns: 1fr; }
+    }
+    .sub-section {
+        font-size: 1rem;
+        font-weight: 600;
+        color: var(--color-text-muted);
+        margin: 1.5rem 0 1rem;
+        padding-top: 1rem;
+        border-top: 1px solid var(--color-border);
+    }
+    .form-group label {
+        display: block;
+        font-weight: 600;
+        margin-bottom: 0.35rem;
+        color: var(--color-text);
+        font-size: 0.95rem;
+    }
+    .form-control {
+        width: 100%;
+        padding: 0.625rem 1rem;
+        border: 2px solid var(--color-border);
+        border-radius: var(--radius-sm);
+        font-size: 1rem;
+        font-family: inherit;
+        transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .form-control:focus {
+        outline: none;
+        border-color: var(--color-primary);
+        box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.2);
+    }
+    textarea.form-control {
+        min-height: 80px;
+        resize: vertical;
+    }
+    .field-errors, .form-errors {
+        list-style: none;
+        padding: 0;
+        margin: 0.25rem 0 0;
+        color: var(--color-error);
+        font-size: 0.875rem;
+    }
+    .form-actions {
+        display: flex;
+        gap: 1rem;
+        margin-top: 2rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid var(--color-border);
+    }
+</style>
+{% endblock %}

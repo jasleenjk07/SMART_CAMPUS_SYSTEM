@@ -1,0 +1,111 @@
+{% extends 'attendance/base.html' %}
+
+{% block title %}Dashboard - Smart Attendance{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="welcome-section">
+        <h1>Dashboard</h1>
+        <p class="welcome-text">Welcome, {{ user.get_full_name|default:user.username }}!</p>
+        <p class="dashboard-intro">Select today's class below to mark attendance.</p>
+    </div>
+
+    <h2 class="section-heading">Courses & Sections</h2>
+    {% regroup sections by course as courses_list %}
+    {% for course in courses_list %}
+        <div class="course-group">
+            <h3 class="course-name">{{ course.grouper.code }} — {{ course.grouper.name }}</h3>
+            <div class="section-grid">
+                {% for section in course.list %}
+                    <div class="section-card">
+                        <div class="section-info">
+                            <span class="section-name">{{ section.name }}</span>
+                            <span class="student-badge">{{ section.students.count }} students</span>
+                        </div>
+                        <a href="{% url 'mark_attendance' section.id %}" class="btn btn-primary">Mark Attendance</a>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    {% empty %}
+        <p class="empty-state">No courses or sections found. Add sections in the admin to get started.</p>
+    {% endfor %}
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .welcome-section {
+        margin-bottom: 2rem;
+        padding-bottom: 1.5rem;
+        border-bottom: 1px solid var(--color-border);
+    }
+    .welcome-text {
+        font-size: 1.1rem;
+        color: var(--color-text-muted);
+        margin: 0.25rem 0;
+    }
+    .dashboard-intro {
+        color: var(--color-text-muted);
+        margin: 0.25rem 0 0;
+        font-size: 0.95rem;
+    }
+    .section-heading {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--color-text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        margin: 0 0 1.25rem;
+    }
+    .course-group {
+        margin-bottom: 2rem;
+    }
+    .course-name {
+        font-size: 1.05rem;
+        font-weight: 600;
+        color: var(--color-text);
+        margin: 0 0 1rem;
+    }
+    .section-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 1rem;
+    }
+    .section-card {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 1.25rem 1.5rem;
+        background: rgba(13, 148, 136, 0.06);
+        border: 1px solid rgba(13, 148, 136, 0.2);
+        border-radius: var(--radius-md);
+        transition: all 0.2s ease;
+    }
+    .section-card:hover {
+        background: rgba(13, 148, 136, 0.1);
+        border-color: rgba(13, 148, 136, 0.35);
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+    }
+    .section-info {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+    .section-name {
+        font-weight: 600;
+        color: var(--color-text);
+    }
+    .student-badge {
+        font-size: 0.85rem;
+        color: var(--color-text-muted);
+    }
+    .empty-state {
+        color: var(--color-text-muted);
+        font-style: italic;
+        padding: 2rem;
+        text-align: center;
+    }
+</style>
+{% endblock %}

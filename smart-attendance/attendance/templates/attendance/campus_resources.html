@@ -1,0 +1,142 @@
+{% extends 'attendance/base.html' %}
+
+{% block title %}Campus Resources - Smart Attendance{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h1>Campus Resources</h1>
+        <a href="{% url 'schedule_create' %}" class="btn btn-primary">+ Create Schedule</a>
+    </div>
+    <p class="page-intro">Blocks, classrooms, and class schedules. Create schedules with smart room suggestions that avoid double-booking.</p>
+
+    <h2>Blocks & Classrooms</h2>
+    {% if blocks %}
+        {% for block in blocks %}
+            <div class="block-section">
+                <h3 class="block-name">{{ block.code }} — {{ block.name }}</h3>
+                {% if block.classrooms.exists %}
+                    <div class="table-wrapper">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Room</th>
+                                    <th>Name</th>
+                                    <th>Capacity</th>
+                                    <th>Schedules</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for room in block.classrooms.all %}
+                                    <tr>
+                                        <td><strong>{{ room.room_number }}</strong></td>
+                                        <td>{{ room.name }}</td>
+                                        <td>{{ room.capacity }}</td>
+                                        <td>{{ room.class_schedules.count }}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="empty-inline">No classrooms in this block.</p>
+                {% endif %}
+            </div>
+        {% endfor %}
+    {% else %}
+        <p class="empty-state">No blocks or classrooms configured. Add them in the admin.</p>
+    {% endif %}
+
+    <h2>Class Schedules</h2>
+    {% if schedules %}
+        <div class="table-wrapper">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Section</th>
+                        <th>Classroom</th>
+                        <th>Day</th>
+                        <th>Time</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for sched in schedules %}
+                        <tr>
+                            <td>{{ sched.section }}</td>
+                            <td>{{ sched.classroom }}</td>
+                            <td>{{ sched.get_day_of_week_display }}</td>
+                            <td>{{ sched.start_time|time:"g:i A" }} — {{ sched.end_time|time:"g:i A" }}</td>
+                            <td>
+                                <a href="{% url 'schedule_edit' sched.pk %}" class="btn btn-small btn-outline">Edit</a>
+                                <a href="{% url 'schedule_delete' sched.pk %}" class="btn btn-small btn-outline" style="color: var(--color-error);">Delete</a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <p class="empty-state">No class schedules. Add schedules in the admin.</p>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+    .card-header h1 { margin: 0; }
+    .page-intro {
+        color: var(--color-text-muted);
+        margin: 0 0 1.5rem;
+        font-size: 0.95rem;
+    }
+    .block-section {
+        margin-bottom: 2rem;
+    }
+    .block-name {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--color-text);
+        margin: 0 0 0.75rem;
+    }
+    .table-wrapper { overflow-x: auto; margin-bottom: 1rem; }
+    .data-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    .data-table th,
+    .data-table td {
+        padding: 0.875rem 1rem;
+        text-align: left;
+        border-bottom: 1px solid var(--color-border);
+    }
+    .data-table th {
+        font-weight: 600;
+        color: var(--color-text-muted);
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+    .data-table tbody tr:hover {
+        background: rgba(13, 148, 136, 0.04);
+    }
+    .empty-state,
+    .empty-inline {
+        color: var(--color-text-muted);
+        font-style: italic;
+    }
+    .empty-state { padding: 2rem; text-align: center; }
+    .empty-inline { margin: 0.5rem 0; }
+    h2 {
+        margin-top: 2rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid var(--color-border);
+    }
+</style>
+{% endblock %}
